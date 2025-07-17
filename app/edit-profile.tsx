@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Image,
   Alert,
   ActivityIndicator,
@@ -13,13 +12,23 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
-import { ArrowLeft, Building, Phone, FileText, Camera } from 'lucide-react-native';
+import {
+  Building,
+  Phone,
+  FileText,
+  Camera,
+  Globe,
+  Mail,
+} from 'lucide-react-native';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoidingWrapper';
 
-export default function EditProfileScreen() {
+export default function BillerSetupScreen() {
   const [billerName, setBillerName] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [companyAddress, setCompanyAddress] = useState('');
+  const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState('');
   const [logoUri, setLogoUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,8 +43,10 @@ export default function EditProfileScreen() {
         const billerData = JSON.parse(billerDataString);
         setBillerName(billerData.name || '');
         setGstNumber(billerData.gstNumber || '');
+        setEmail(billerData.email || '');
+        setWebsite(billerData.website || '');
         setMobileNumber(billerData.mobileNumber || '');
-        setCompanyAddress(billerData.address || '');
+        setCompanyAddress(billerData.companyAddress || '');
         setLogoUri(billerData.logoUri || null);
       }
     } catch (error) {
@@ -44,13 +55,19 @@ export default function EditProfileScreen() {
   };
 
   const validateGST = (gst: string) => {
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
     return gstRegex.test(gst);
   };
 
   const validateMobile = (mobile: string) => {
     const mobileRegex = /^[6-9]\d{9}$/;
     return mobileRegex.test(mobile);
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return emailRegex.test(email);
   };
 
   const pickImage = async () => {
@@ -66,9 +83,9 @@ export default function EditProfileScreen() {
     }
   };
 
-  const handleSave = async () => {
+  const handleComplete = async () => {
     if (!billerName.trim()) {
-      Alert.alert('Error', 'Please enter biller name');
+      Alert.alert('Error', 'Please enter business name');
       return;
     }
 
@@ -79,6 +96,16 @@ export default function EditProfileScreen() {
 
     if (!validateMobile(mobileNumber)) {
       Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter business email');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
@@ -94,35 +121,36 @@ export default function EditProfileScreen() {
         name: billerName.trim(),
         gstNumber: gstNumber.trim(),
         mobileNumber: mobileNumber.trim(),
-        address: companyAddress.trim(),
+        companyAddress: companyAddress.trim(),
+        email: email.trim(),
+        website: website.trim(),
         logoUri: logoUri,
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
       };
 
       await AsyncStorage.setItem('billerData', JSON.stringify(billerData));
+      await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+      await AsyncStorage.setItem('invoiceCounter', '1');
 
-      Alert.alert('Success', 'Profile updated successfully', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)/settings') }
-      ]);
+      router.replace('/(tabs)');
     } catch (error) {
-      Alert.alert('Error', 'Failed to update profile');
-      console.error('Error saving biller data:', error);
+      Alert.alert('Error', 'Failed to save business information');
+      console.error('Error saving business data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1E293B" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Edit Profile</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <KeyboardAvoidingWrapper>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Set Up Your Business</Text>
+          <Text style={styles.subtitle}>
+            Enter your business details to get started with BillMate
+          </Text>
+        </View>
 
-      <ScrollView style={styles.content}>
         <View style={styles.form}>
           <View style={styles.logoSection}>
             <TouchableOpacity onPress={pickImage} style={styles.logoContainer}>
@@ -135,7 +163,7 @@ export default function EditProfileScreen() {
                 </View>
               )}
             </TouchableOpacity>
-            <Text style={styles.logoHint}>Tap to change your company logo</Text>
+            <Text style={styles.logoHint}>Tap to add your company logo</Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -148,6 +176,40 @@ export default function EditProfileScreen() {
                 onChangeText={setBillerName}
                 placeholder="Enter business name"
                 placeholderTextColor="#94A3B8"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email *</Text>
+            <View style={styles.inputContainer}>
+              <Mail size={20} color="#64748B" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter business email"
+                placeholderTextColor="#94A3B8"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Website (Optional)</Text>
+            <View style={styles.inputContainer}>
+              <Globe size={20} color="#64748B" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={website}
+                onChangeText={setWebsite}
+                placeholder="Enter business website"
+                placeholderTextColor="#94A3B8"
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </View>
@@ -199,19 +261,19 @@ export default function EditProfileScreen() {
           </View>
 
           <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSave}
+            onPress={handleComplete}
+            style={styles.completeButton}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <Text style={styles.completeText}>Complete Setup</Text>
             )}
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </KeyboardAvoidingWrapper>
   );
 }
 
@@ -221,32 +283,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  backButton: {
-    padding: 8,
+    paddingVertical: 25,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: 'bold',
     color: '#1E293B',
+    marginBottom: 8,
   },
-  placeholder: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
+  subtitle: {
+    fontSize: 16,
+    color: '#64748B',
+    lineHeight: 24,
   },
   form: {
-    padding: 20,
+    paddingHorizontal: 20,
+    // paddingBottom: 40,
   },
   logoSection: {
     alignItems: 'center',
@@ -281,13 +334,13 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -297,7 +350,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 4,
   },
   inputIcon: {
     marginRight: 12,
@@ -321,14 +374,14 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginTop: 4,
   },
-  saveButton: {
+  completeButton: {
     backgroundColor: '#2563EB',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 20,
   },
-  saveButtonText: {
+  completeText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',

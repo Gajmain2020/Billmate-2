@@ -102,7 +102,7 @@ export default function ItemsScreen() {
           </View>
           <View style={styles.itemActions}>
             <TouchableOpacity
-              onPress={() => router.push(`/edit-item/${item.id}`)}
+              onPress={() => router.push(`/edit-item?itemId=${item.id}`)}
             >
               <Edit3 size={18} color="#2563EB" />
             </TouchableOpacity>
