@@ -11,8 +11,16 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ArrowLeft, Package, Hash, IndianRupee, Tag, FileText } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Package,
+  Hash,
+  IndianRupee,
+  Tag,
+  FileText,
+} from 'lucide-react-native';
 import uuid from 'react-native-uuid';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoidingWrapper';
 
 const GST_RATES = [
   { label: 'Nil (0%)', value: 0 },
@@ -61,12 +69,19 @@ export default function AddItemScreen() {
 
     try {
       const existingItemsString = await AsyncStorage.getItem('items');
-      const existingItems = existingItemsString ? JSON.parse(existingItemsString) : [];
+      const existingItems = existingItemsString
+        ? JSON.parse(existingItemsString)
+        : [];
 
       // Check if item ID already exists
-      const itemIdExists = existingItems.some((item: any) => item.itemId === itemId.trim());
+      const itemIdExists = existingItems.some(
+        (item: any) => item.itemId === itemId.trim()
+      );
       if (itemIdExists) {
-        Alert.alert('Error', 'Item ID already exists. Please use a different ID.');
+        Alert.alert(
+          'Error',
+          'Item ID already exists. Please use a different ID.'
+        );
         setLoading(false);
         return;
       }
@@ -88,7 +103,7 @@ export default function AddItemScreen() {
       await AsyncStorage.setItem('items', JSON.stringify(updatedItems));
 
       Alert.alert('Success', 'Item added successfully', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)/items') }
+        { text: 'OK', onPress: () => router.replace('/(tabs)/items') },
       ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to save item');
@@ -99,150 +114,164 @@ export default function AddItemScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1E293B" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Add Item</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <KeyboardAvoidingWrapper>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={24} color="#1E293B" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Add Item</Text>
+          <View style={styles.placeholder} />
+        </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Item Name *</Text>
-            <View style={styles.inputContainer}>
-              <Package size={20} color="#64748B" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={itemName}
-                onChangeText={setItemName}
-                placeholder="Enter item name"
-                placeholderTextColor="#94A3B8"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Item ID *</Text>
-            <View style={styles.inputContainer}>
-              <Hash size={20} color="#64748B" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={itemId}
-                onChangeText={setItemId}
-                placeholder="Enter unique item ID"
-                placeholderTextColor="#94A3B8"
-              />
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, { flex: 2 }]}>
-              <Text style={styles.label}>Price *</Text>
+        <ScrollView style={styles.content}>
+          <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Item Name *</Text>
               <View style={styles.inputContainer}>
-                <IndianRupee size={20} color="#64748B" style={styles.inputIcon} />
+                <Package size={20} color="#64748B" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  value={price}
-                  onChangeText={setPrice}
-                  placeholder="0.00"
+                  value={itemName}
+                  onChangeText={setItemName}
+                  placeholder="Enter item name"
                   placeholderTextColor="#94A3B8"
-                  keyboardType="numeric"
                 />
               </View>
             </View>
 
-            <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
-              <Text style={styles.label}>Unit</Text>
-              <View style={styles.pickerContainer}>
-                <Text style={styles.pickerText}>{unit}</Text>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Item ID *</Text>
+              <View style={styles.inputContainer}>
+                <Hash size={20} color="#64748B" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={itemId}
+                  onChangeText={setItemId}
+                  placeholder="Enter unique item ID"
+                  placeholderTextColor="#94A3B8"
+                />
               </View>
             </View>
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>GST Rate</Text>
-            <View style={styles.gstContainer}>
-              {GST_RATES.map((rate) => (
-                <TouchableOpacity
-                  key={rate.value}
-                  style={[
-                    styles.gstOption,
-                    gstRate === rate.value && styles.gstOptionSelected,
-                  ]}
-                  onPress={() => setGstRate(rate.value)}
-                >
-                  <Text
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, { flex: 2 }]}>
+                <Text style={styles.label}>Price *</Text>
+                <View style={styles.inputContainer}>
+                  <IndianRupee
+                    size={20}
+                    color="#64748B"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    value={price}
+                    onChangeText={setPrice}
+                    placeholder="0.00"
+                    placeholderTextColor="#94A3B8"
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+
+              <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
+                <Text style={styles.label}>Unit</Text>
+                <View style={styles.pickerContainer}>
+                  <Text style={styles.pickerText}>{unit}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>GST Rate</Text>
+              <View style={styles.gstContainer}>
+                {GST_RATES.map((rate) => (
+                  <TouchableOpacity
+                    key={rate.value}
                     style={[
-                      styles.gstOptionText,
-                      gstRate === rate.value && styles.gstOptionTextSelected,
+                      styles.gstOption,
+                      gstRate === rate.value && styles.gstOptionSelected,
                     ]}
+                    onPress={() => setGstRate(rate.value)}
                   >
-                    {rate.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.checkboxContainer}>
-            <TouchableOpacity
-              style={styles.checkbox}
-              onPress={() => setPriceIncludesGst(!priceIncludesGst)}
-            >
-              <View style={[styles.checkboxInner, priceIncludesGst && styles.checkboxChecked]}>
-                {priceIncludesGst && <Text style={styles.checkmark}>✓</Text>}
+                    <Text
+                      style={[
+                        styles.gstOptionText,
+                        gstRate === rate.value && styles.gstOptionTextSelected,
+                      ]}
+                    >
+                      {rate.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-              <Text style={styles.checkboxLabel}>Price includes GST</Text>
+            </View>
+
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setPriceIncludesGst(!priceIncludesGst)}
+              >
+                <View
+                  style={[
+                    styles.checkboxInner,
+                    priceIncludesGst && styles.checkboxChecked,
+                  ]}
+                >
+                  {priceIncludesGst && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Price includes GST</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Category (Optional)</Text>
+              <View style={styles.inputContainer}>
+                <Tag size={20} color="#64748B" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={category}
+                  onChangeText={setCategory}
+                  placeholder="Enter category"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Description (Optional)</Text>
+              <View style={styles.inputContainer}>
+                <FileText size={20} color="#64748B" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="Enter item description"
+                  placeholderTextColor="#94A3B8"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.saveButtonText}>Save Item</Text>
+              )}
             </TouchableOpacity>
           </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category (Optional)</Text>
-            <View style={styles.inputContainer}>
-              <Tag size={20} color="#64748B" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={category}
-                onChangeText={setCategory}
-                placeholder="Enter category"
-                placeholderTextColor="#94A3B8"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description (Optional)</Text>
-            <View style={styles.inputContainer}>
-              <FileText size={20} color="#64748B" style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Enter item description"
-                placeholderTextColor="#94A3B8"
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSave}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.saveButtonText}>Save Item</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingWrapper>
   );
 }
 

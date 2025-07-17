@@ -13,11 +13,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Plus,
   Receipt,
-  TrendingUp,
   Users,
   Package,
   IndianRupee,
-  FileText,
   Clock,
 } from 'lucide-react-native';
 import KeyboardAvoidingWrapper from '@/components/KeyboardAvoidingWrapper';
