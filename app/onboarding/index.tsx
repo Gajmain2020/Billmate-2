@@ -162,7 +162,7 @@ export default function OnboardingScreen() {
           </View>
 
           <View style={styles.buttonContainer}>
-            {currentPage > 0 && (
+            {currentPage > 0 ? (
               <TouchableOpacity
                 onPress={handlePrevious}
                 style={styles.previousButton}
@@ -170,6 +170,8 @@ export default function OnboardingScreen() {
                 <ArrowLeft size={20} color="#64748B" />
                 <Text style={styles.previousText}>Previous</Text>
               </TouchableOpacity>
+            ) : (
+              <View style={styles.previousButtonPlaceholder} /> // placeholder
             )}
 
             <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 10,
     paddingBottom: 20,
   },
   skipButton: {
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
   pagination: {
     flexDirection: 'row',
@@ -280,6 +282,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  previousButtonPlaceholder: {
+    width: 120,
   },
   previousButton: {
     flexDirection: 'row',
