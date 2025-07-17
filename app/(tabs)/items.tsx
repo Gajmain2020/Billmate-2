@@ -9,9 +9,18 @@ import {
   Alert,
   RefreshControl,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, Search, Package, CreditCard as Edit3, Trash2, Filter, IndianRupee, Hash } from 'lucide-react-native';
+import {
+  Plus,
+  Search,
+  Package,
+  CreditCard as Edit3,
+  Trash2,
+  Filter,
+  IndianRupee,
+  Hash,
+} from 'lucide-react-native';
 
 interface Item {
   id: string;
@@ -37,12 +46,11 @@ export default function ItemsScreen() {
     loadItems();
   }, []);
 
+  const { id } = useLocalSearchParams();
+
   useEffect(() => {
-    const unsubscribe = router.addListener('focus', () => {
-      loadItems();
-    });
-    return unsubscribe;
-  }, []);
+    loadItems();
+  }, [id]);
 
   useEffect(() => {
     filterItems();
@@ -65,14 +73,15 @@ export default function ItemsScreen() {
     let filtered = items;
 
     if (searchQuery) {
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.itemId.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.itemId.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     if (selectedCategory) {
-      filtered = filtered.filter(item => item.category === selectedCategory);
+      filtered = filtered.filter((item) => item.category === selectedCategory);
     }
 
     setFilteredItems(filtered);
@@ -85,33 +94,31 @@ export default function ItemsScreen() {
   };
 
   const deleteItem = async (itemId: string) => {
-    Alert.alert(
-      'Delete Item',
-      'Are you sure you want to delete this item?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const updatedItems = items.filter(item => item.id !== itemId);
-              await AsyncStorage.setItem('items', JSON.stringify(updatedItems));
-              setItems(updatedItems);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete item');
-            }
-          },
+    Alert.alert('Delete Item', 'Are you sure you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const updatedItems = items.filter((item) => item.id !== itemId);
+            await AsyncStorage.setItem('items', JSON.stringify(updatedItems));
+            setItems(updatedItems);
+          } catch (error) {
+            Alert.alert('Error', 'Failed to delete item');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const getGstText = (gstRate: number) => {
     return gstRate === 0 ? 'Nil' : `${gstRate}%`;
   };
 
-  const categories = [...new Set(items.map(item => item.category).filter(Boolean))];
+  const categories = [
+    ...new Set(items.map((item) => item.category).filter(Boolean)),
+  ];
 
   const renderItem = ({ item }: { item: Item }) => (
     <View style={styles.itemCard}>
@@ -200,7 +207,9 @@ export default function ItemsScreen() {
           <Package size={64} color="#CBD5E1" />
           <Text style={styles.emptyTitle}>No Items Found</Text>
           <Text style={styles.emptyDescription}>
-            {searchQuery ? 'No items match your search' : 'Add your first item to get started'}
+            {searchQuery
+              ? 'No items match your search'
+              : 'Add your first item to get started'}
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
@@ -214,7 +223,7 @@ export default function ItemsScreen() {
         <FlatList
           data={filteredItems}
           renderItem={renderItem}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           style={styles.list}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

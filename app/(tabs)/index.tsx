@@ -10,16 +10,17 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { 
-  Plus, 
-  Receipt, 
-  TrendingUp, 
-  Users, 
+import {
+  Plus,
+  Receipt,
+  TrendingUp,
+  Users,
   Package,
   IndianRupee,
   FileText,
-  Clock
+  Clock,
 } from 'lucide-react-native';
+import KeyboardAvoidingWrapper from '@/components/KeyboardAvoidingWrapper';
 
 interface BillerData {
   name: string;
@@ -67,7 +68,10 @@ export default function DashboardScreen() {
       const customers = customersString ? JSON.parse(customersString) : [];
       const items = itemsString ? JSON.parse(itemsString) : [];
 
-      const totalAmount = invoices.reduce((sum: number, invoice: any) => sum + invoice.total, 0);
+      const totalAmount = invoices.reduce(
+        (sum: number, invoice: any) => sum + invoice.total,
+        0
+      );
       const recentInvoices = invoices.slice(-5).reverse();
 
       setStats({
@@ -107,12 +111,12 @@ export default function DashboardScreen() {
       color: '#DC2626',
       onPress: () => router.push('/add-customer'),
     },
-    {
-      title: 'View Reports',
-      icon: TrendingUp,
-      color: '#7C3AED',
-      onPress: () => router.push('/reports'),
-    },
+    // {
+    //   title: 'View Reports',
+    //   icon: TrendingUp,
+    //   color: '#7C3AED',
+    //   onPress: () => router.push('/reports'),
+    // },
   ];
 
   const statCards = [
@@ -147,81 +151,94 @@ export default function DashboardScreen() {
   ];
 
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          {billerData?.logoUri && (
-            <Image source={{ uri: billerData.logoUri }} style={styles.logo} />
-          )}
-          <View style={styles.headerText}>
-            <Text style={styles.welcomeText}>Welcome back!</Text>
-            <Text style={styles.businessName}>{billerData?.name}</Text>
+    <KeyboardAvoidingWrapper>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            {billerData?.logoUri && (
+              <Image source={{ uri: billerData.logoUri }} style={styles.logo} />
+            )}
+            <View style={styles.headerText}>
+              <Text style={styles.welcomeText}>Welcome back!</Text>
+              <Text style={styles.businessName}>{billerData?.name}</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.quickActions}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.actionGrid}>
-          {quickActions.map((action, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.actionCard}
-              onPress={action.onPress}
-            >
-              <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
-                <action.icon size={24} color="#FFFFFF" />
-              </View>
-              <Text style={styles.actionText}>{action.title}</Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.quickActions}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionGrid}>
+            {quickActions.map((action, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.actionCard}
+                onPress={action.onPress}
+              >
+                <View
+                  style={[styles.actionIcon, { backgroundColor: action.color }]}
+                >
+                  <action.icon size={24} color="#FFFFFF" />
+                </View>
+                <Text style={styles.actionText}>{action.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.stats}>
-        <Text style={styles.sectionTitle}>Business Overview</Text>
-        <View style={styles.statsGrid}>
-          {statCards.map((stat, index) => (
-            <View key={index} style={[styles.statCard, { backgroundColor: stat.bgColor }]}>
-              <View style={styles.statIcon}>
-                <stat.icon size={24} color={stat.color} />
+        <View style={styles.stats}>
+          <Text style={styles.sectionTitle}>Business Overview</Text>
+          <View style={styles.statsGrid}>
+            {statCards.map((stat, index) => (
+              <View
+                key={index}
+                style={[styles.statCard, { backgroundColor: stat.bgColor }]}
+              >
+                <View style={styles.statIcon}>
+                  <stat.icon size={24} color={stat.color} />
+                </View>
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statTitle}>{stat.title}</Text>
               </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statTitle}>{stat.title}</Text>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
 
-      {stats.recentInvoices.length > 0 && (
-        <View style={styles.recentSection}>
-          <Text style={styles.sectionTitle}>Recent Invoices</Text>
-          {stats.recentInvoices.map((invoice, index) => (
-            <View key={index} style={styles.invoiceCard}>
-              <View style={styles.invoiceHeader}>
-                <Text style={styles.invoiceNumber}>{invoice.invoiceNumber}</Text>
-                <Text style={styles.invoiceAmount}>₹{invoice.total.toLocaleString()}</Text>
-              </View>
-              <Text style={styles.customerName}>{invoice.customer.name}</Text>
-              <View style={styles.invoiceFooter}>
-                <View style={styles.dateContainer}>
-                  <Clock size={12} color="#64748B" />
-                  <Text style={styles.invoiceDate}>
-                    {new Date(invoice.createdAt).toLocaleDateString()}
+        {stats.recentInvoices.length > 0 && (
+          <View style={styles.recentSection}>
+            <Text style={styles.sectionTitle}>Recent Invoices</Text>
+            {stats.recentInvoices.map((invoice, index) => (
+              <View key={index} style={styles.invoiceCard}>
+                <View style={styles.invoiceHeader}>
+                  <Text style={styles.invoiceNumber}>
+                    {invoice.invoiceNumber}
+                  </Text>
+                  <Text style={styles.invoiceAmount}>
+                    ₹{invoice.total.toLocaleString()}
                   </Text>
                 </View>
-                <Text style={styles.itemCount}>{invoice.items.length} items</Text>
+                <Text style={styles.customerName}>{invoice.customer.name}</Text>
+                <View style={styles.invoiceFooter}>
+                  <View style={styles.dateContainer}>
+                    <Clock size={12} color="#64748B" />
+                    <Text style={styles.invoiceDate}>
+                      {new Date(invoice.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemCount}>
+                    {invoice.items.length} items
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
-      )}
-    </ScrollView>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingWrapper>
   );
 }
 
@@ -233,8 +250,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
   },
